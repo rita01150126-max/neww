@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相關性統計筆記 - 互動版</title>
+    <style>
+        body {
+            font-family: 'Arial', '微軟正黑體', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.8; /* 增加行高以提高可讀性 */
+            margin: 20px;
+            background-color: #f8f9fa; /* 更淺的背景色 */
+            color: #343a40; /* 更深的文字顏色 */
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto; /* 增加上下邊距 */
+            background: #ffffff;
+            padding: 40px; /* 增加內邊距 */
+            border-radius: 12px; /* 更圓潤的邊角 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* 更明顯的陰影 */
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.8em; /* 增大標題字體 */
+            color: #0056b3;
+            border-bottom: 4px solid #0056b3;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            cursor: pointer; /* 鼠標變為手型，表示可點擊 */
+            color: #007bff;
+            font-size: 2.2em; /* 增大標題字體 */
+            margin-top: 35px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background-color: #e9f5ff; /* 標題背景色 */
+            border-left: 5px solid #007bff; /* 左側強調邊框 */
+            border-radius: 5px;
+            transition: background-color 0.3s ease; /* 平滑過渡效果 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* 讓箭頭在右側 */
+        }
+        h2:hover {
+            background-color: #d7edff; /* 鼠標懸停效果 */
+        }
+        h2 .toggle-icon {
+            font-size: 0.8em; /* 箭頭大小 */
+            transition: transform 0.3s ease; /* 箭頭旋轉動畫 */
+        }
+        h2.collapsed .toggle-icon {
+            transform: rotate(-90deg); /* 折疊時箭頭向下 */
+        }
+
+        h3 {
+            color: #28a745; /* 次級標題顏色 */
+            font-size: 1.7em;
+            margin-top: 25px;
+            border-bottom: 1px dashed #ced4da; /* 虛線下劃線 */
+            padding-bottom: 5px;
+        }
+        h4 {
+            color: #6c757d; /* 更小的標題顏色 */
+            font-size: 1.3em;
+            margin-top: 15px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            line-height: 1.7;
+        }
+        ul ul {
+            list-style-type: circle;
+            margin-left: 35px;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 25px;
+            padding-left: 0;
+            line-height: 1.7;
+        }
+        ol ol {
+            list-style-type: lower-alpha;
+            margin-left: 35px;
+        }
+        strong {
+            color: #dc3545; /* 強調文字顏色 */
+        }
+        .page-number {
+            font-style: italic;
+            color: #868e96;
+            margin-bottom: 10px;
+            display: block;
+            text-align: right; /* 頁數靠右對齊 */
+            font-size: 0.9em;
+        }
+        .content {
+            padding: 15px 20px;
+            background-color: #fefefe;
+            border: 1px solid #e2e6ea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            display: none; /* 內容預設隱藏 */
+            overflow: hidden; /* 防止內容溢出 */
+            transition: all 0.4s ease-out; /* 平滑展開/收合 */
+        }
+        .content.active {
+            display: block; /* 內容顯示 */
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .citation {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-left: 5px; /* 讓引用稍微縮進 */
+        }
+        /* LaTeX 數學公式樣式 */
+        .math-formula {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1em;
+            color: #495057;
+            padding: 10px;
+            background-color: #f1f3f5;
+            border-radius: 5px;
+            border: 1px dashed #adb5bd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>統計學 - 相關性筆記</h1>
+
+        <h2 onclick="toggleContent(this)">1. 相關性概覽 <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 1</p>
+            <ul>
+                <li><strong>主題</strong>: 相關性 [cite: 1]</li>
+                <li><strong>作者</strong>: 陶振超 (Chen-Chao Tao) [cite: 1]</li>
+                <li><strong>單位</strong>: 國立陽明交通大學 傳播與科技學系 [cite: 1]</li>
+                <li><strong>日期</strong>: 2025 年 5 月 19 日 [cite: 1]</li>
+                <li><strong>核心概念</strong>: 探討兩個變項之間的關係。例如：「線上互動頻率」與「面對面互動頻率」之間的關係。 [cite: 1]</li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">2. 散布圖 (Scatterplot) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 2</p>
+            <ul>
+                <li><strong>目的</strong>: 當我們收集到兩個變項的測量數據，旨在檢視它們之間的關係時使用。 [cite: 2]</li>
+                <li><strong>定義</strong>: 每個研究參與者、單位或觀察值都由二維空間中的一個點表示。這個點的座標 $(X_i, Y_i)$ 分別代表個體（或物件）在變項 X 和 Y 上的分數。 [cite: 2]</li>
+                <li><strong>繪製原則</strong>:
+                    <ul>
+                        <li>預測變項/自變項 (predictor/independent variable) 呈現在 X (水平) 軸上。 [cite: 2]</li>
+                        <li>效標變項/依變項 (criterion/dependent variable) 呈現在 Y (垂直) 軸上。 [cite: 2]</li>
+                        <li>如果變項之間的區分不明顯，那麼將哪個變項標記為 X 或 Y 就不重要。 [cite: 2]</li>
+                    </ul>
+                </li>
+                <li><strong>範例 (St. Leger, Cochrane, and Moore, 1978)</strong>: 嬰兒死亡率隨著醫師人數的增加而增加。這顯示出一個<strong>正向關係</strong> ($n=18$)。 [cite: 3]</li>
+            </ul>
+
+            <p class="page-number">投影片 3</p>
+            <ul>
+                <li><strong>迴歸線 (Regression line)</strong>: 一條最能代表資料趨勢的直線（詳見第十章）。 [cite: 4]
+                    <ul>
+                        <li>Y 在 X 上的預測值 (Y predicted on X，簡寫為 Y on X)。 [cite: 4]</li>
+                        <li>它代表了我們對給定 $X_i$ 值時，$Y_i$ 的最佳預測。 [cite: 4]</li>
+                        <li>對於任何給定的 X 值，迴歸線對應的高度代表了我們對 Y 的最佳預測，標記為 $\hat{Y}$ (Y hat)。 [cite: 4]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 4</p>
+            <ul>
+                <li><strong>相關性 (Correlation)</strong>:
+                    <ul>
+                        <li><strong>視覺上</strong>: 指點圍繞迴歸線的聚集程度。 [cite: 5]</li>
+                        <li><strong>數學上</strong>: 指 Y 的實際值與預測值之間的一致程度。 [cite: 5]</li>
+                    </ul>
+                </li>
+                <li><strong>相關係數 ($r$)</strong>:
+                    <ul>
+                        <li>其值介於 +1 和 -1 之間。 [cite: 5]</li>
+                        <li>如果點非常緊密地聚集在直線上，表示存在<strong>強烈的線性關係</strong>（例如 $r=.81$）。 [cite: 5]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 5</p>
+            <ul>
+                <li>如果所有點都精確地落在直線上，相關係數將為 +1。 [cite: 6]</li>
+                <li><strong>正向關係 ($r > 0$)</strong>: 意指一個變項的高分傾向於與另一個變項的高分配對，反之亦然。在散布圖上，這意味著「高於平均-高於平均」$(X > \overline{X}, Y > \overline{Y})$ 的點和「低於平均-低於平均」$(X < \overline{X}, Y < \overline{Y})$ 的點，其 $(X-\overline{X})(Y-\overline{Y})$ 的乘積為正值。 [cite: 6]</li>
+            </ul>
+
+            <p class="page-number">投影片 6</p>
+            <ul>
+                <li><strong>範例 (Cochrane, St. Leger, and Moore, 1978)</strong>: 人均醫療支出與預期壽命之間的關係。這項研究顯示<strong>沒有關係</strong> ($r=.14, n=23$)。對於 $r=0$ 的情況，這四個區塊（高於平均-高於平均、低於平均-高於平均、低於平均-低於平均、高於平均-低於平均）中的點數大致相等。 [cite: 7]</li>
+                <li><strong>範例 (St. Leger, Cochrane, and Moore, 1979)</strong>: 乳癌發生率與太陽輻射之間的關係。這項研究顯示<strong>負向關係</strong> ($r=-.76, n=24$)。對於 $r < 0$ 的情況，這意味著「低於平均-高於平均」$(X < \overline{X}, Y > \overline{Y})$ 的點和「高於平均-低於平均」$(X > \overline{X}, Y < \overline{Y})$ 的點，其 $(X-\overline{X})(Y-\overline{Y})$ 的乘積為負值。 [cite: 8]</li>
+            </ul>
+
+            <p class="page-number">投影片 7</p>
+            <ul>
+                <li><strong>相關係數的符號</strong>: 表示關係的<strong>方向</strong>。 [cite: 9]</li>
+                <li>相關係數 .75 和 -.75 表示<strong>完全相同程度</strong>的關係，差異僅在於關係的<strong>方向</strong>。 [cite: 9]</li>
+                <li><strong>範例</strong>: 生活步調與心臟病之間的關係。 [cite: 9]</li>
+            </ul>
+
+            <p class="page-number">投影片 8</p>
+            <ul>
+                <li><strong>Levine (1990) 研究詳情</strong>:
+                    <ul>
+                        <li><strong>研究焦點</strong>: 生活步調與心臟病之間的關係。 [cite: 10]</li>
+                        <li><strong>變項</strong>:
+                            <ul>
+                                <li><strong>自變項 (Independent variable)</strong>: 生活步調。Levine 偷偷地使用碼錶記錄了以下時間來衡量：銀行櫃員找零 20 美元鈔票所需的時間、一般人步行 60 英尺所需的時間、以及人們說話的速度。生活步調被視為這三項測量的平均值。 [cite: 10]</li>
+                                <li><strong>依變項 (Dependent variable)</strong>: 各城市缺血性心臟病（ischemic heart disease，局部缺血的）的年齡校正死亡率。 [cite: 10]</li>
+                            </ul>
+                        </li>
+                        <li><strong>結果</strong>: 顯示為<strong>正向關係</strong> ($r=.365$)。這表示隨著生活步調的加快，心臟病死亡人數也隨之增加。這是一種<strong>線性關係</strong>，而非曲線關係。 [cite: 11]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">3. 共變數 (Covariance) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 9</p>
+            <ul>
+                <li><strong>定義</strong>: 反映兩個變項共同變化的程度的統計量。 [cite: 12]</li>
+                <li><strong>公式</strong>:
+                    <p class="math-formula">$cov_{XY}=\frac{\Sigma(X-\overline{X})(Y-\overline{Y})}{N-1}$</p>
+                    （與變異數的計算方式類似）。 [cite: 12]
+                </li>
+                <li><strong>範例</strong>: 圖 9-5 中的「高於平均-高於平均」的點。 [cite: 13]</li>
+            </ul>
+
+            <p class="page-number">投影片 10</p>
+            <ul>
+                <li><strong>範例</strong>: 圖 9-5 中的「低於平均-低於平均」的點。 [cite: 15]</li>
+                <li><strong>範例</strong>: 圖 9-5 中的「低於平均-高於平均」的點。 [cite: 18]</li>
+                <li><strong>共變數的意義</strong>: [cite: 20]
+                    <ul>
+                        <li><strong>正值</strong>: 一個變項的高分傾向於與另一個變項的高分配對。 [cite: 20]</li>
+                        <li><strong>接近零</strong>: 一個變項的高分大約同樣頻繁地與另一個變項的高分和低分配對。 [cite: 20]</li>
+                        <li><strong>負值</strong>: 一個變項的高分傾向於與另一個變項的低分配對。 [cite: 20]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 11</p>
+            <ul>
+                <li><strong>範例</strong>: 圖 9-5 中的「高於平均-低於平均」的點。 [cite: 20]</li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">4. 皮爾森積差相關係數 (Pearson product-moment correlation coefficient, r) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 12</p>
+            <ul>
+                <li><strong>共變數的困難</strong>: $cov_{XY}$ 的絕對值也受 X 和 Y 標準差的影響。例如，$cov_{XY}=20$ 可能表示當每個變項變異性很小（標準差小）時的高度相關，也可能表示當分數變異很大（標準差大）時的低度相關。 [cite: 21]</li>
+                <li><strong>解決方法</strong>: 通過標準差對共變數進行縮放或標準化。 [cite: 21]</li>
+                <li><strong>相關係數 $r$ 的公式</strong>:
+                    <p class="math-formula">$r=\frac{cov_{XY}}{s_X s_Y} = \frac{\Sigma(X-\overline{X})(Y-\overline{Y})}{N-1} \times \frac{1}{s_X s_Y} = \frac{\Sigma(X-\overline{X})(Y-\overline{Y})}{(N-1)s_X s_Y} = \frac{\Sigma Z_X Z_Y}{N-1}$</p>
+                    <ul>
+                        <li>$cov_{XY}$ 的最大值是 $s_X s_Y$。 [cite: 21]</li>
+                        <li>$r$ 的極限值是 $\pm1.00$。 [cite: 21]</li>
+                    </ul>
+                </li>
+                <li><strong>手動計算公式</strong>:
+                    <p class="math-formula">$r=\frac{N \Sigma XY - \Sigma X \Sigma Y}{\sqrt{[N\Sigma X^2 - (\Sigma X)^2][N\Sigma Y^2 - (\Sigma Y)^2]}}$</p>
+                </li>
+                <li><strong>相關係數的解釋應謹慎</strong>: [cite: 22]
+                    <ul>
+                        <li>$r$ 應根據<strong>效應量</strong> ($r^2$) 來解釋（第 9.15 節將涵蓋）。 [cite: 22]</li>
+                        <li>$r$ <strong>不應</strong>被解釋為兩個變項之間關係的百分比。例如，$r=.365$ 不表示生活步調與心臟病之間有 36.5% 的關係。 [cite: 22]</li>
+                        <li>$r$ 越接近 -1 或 +1，表示兩個變項之間的關係越強。 [cite: 22]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 13</p>
+            <ul>
+                <li><strong>回顧 Levine (1990) 研究</strong>: 該研究顯示生活步調與心臟病之間存在<strong>正向關係</strong> ($r=.365$)。這個值可以通過上述的 $r$ 公式計算得出。 [cite: 23]</li>
+            </ul>
+
+            <p class="page-number">投影片 14</p>
+            <ul>
+                <li><strong>R 語言計算示例</strong>:
+                    <ul>
+                        <li><code>cor(d$Heart, d$Pace, method = "pearson")</code> 命令會直接計算出皮爾森相關係數，結果為 0.3651289。 [cite: 24]</li>
+                        <li><code>cor.test(d$Heart, d$Pace, method = "pearson", alternative = "two.sided")</code> 命令則會進行相關性檢定，提供變項名稱、t 值 ($t=2.2869$)、自由度 ($df=34$, 其中 $df=n-2$)、p 值 ($p=0.02855$)、雙尾檢定的對立假設（真實相關性不等於 0）、95% 信賴區間（0.04158114 至 0.61936671）以及樣本相關係數（0.3651289）。 [cite: 24]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 15</p>
+            <ul>
+                <li><strong>R 語言 <code>str(results)</code> 輸出解釋</strong>: [cite: 26]
+                    <ul>
+                        <li><code>$statistic</code>: 檢定統計量 t 值 (2.29)。 [cite: 26]</li>
+                        <li><code>$parameter</code>: 自由度 df (34)。 [cite: 26]</li>
+                        <li><code>$p.value</code>: p 值 (0.0285)。 [cite: 26]</li>
+                        <li><code>$estimate</code>: 相關係數 r 值 (0.365)。 [cite: 26]</li>
+                        <li><code>$null.value</code>: 虛無假設下的相關性（0）。 [cite: 26]</li>
+                        <li><code>$alternative</code>: 對立假設（雙尾）。 [cite: 26]</li>
+                        <li><code>$method</code>: 使用的方法（皮爾森積差相關）。 [cite: 26]</li>
+                        <li><code>$data.name</code>: 使用的資料變項名稱。 [cite: 26]</li>
+                        <li><code>$conf.int</code>: 95% 信賴區間（0.0416 至 0.6194）。 [cite: 26]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 16</p>
+            <ul>
+                <li><strong>R 語言結果關鍵值擷取</strong>: [cite: 27]
+                    <ul>
+                        <li>自由度 <code>df = 34</code>。 [cite: 27]</li>
+                        <li>p 值 <code>0.02854719</code>。 [cite: 27]</li>
+                        <li>相關係數 <code>cor = 0.3651289</code>。 [cite: 27]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">5. 排序資料的相關性 (Correlations with ranked data) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 16</p>
+            <ul>
+                <li><strong>情境範例</strong>: 書寫良好的讀書計畫是否會導致申請者被錄取的可能性更高？ [cite: 28]
+                    <ul>
+                        <li><strong>第一個變項</strong>: 讀書計畫的<strong>品質</strong>。一位評審根據清晰度、具體性和真誠性對 10 位研究所申請者的讀書計畫品質進行排名。最差的會被分配到排名 1，其次差的分配到排名 2，依此類推。 [cite: 28]</li>
+                        <li><strong>第二個變項</strong>: 申請者的<strong>可接受性</strong>。另一位評審根據所有其他可用資訊對相同的 10 份申請書的總體可接受性進行排名。 [cite: 28]</li>
+                    </ul>
+                </li>
+                <li><strong>問題</strong>: 讀書計畫的品質與申請者的可接受性之間的關聯程度如何？ [cite: 29]</li>
+            </ul>
+
+            <p class="page-number">投影片 17</p>
+            <ul>
+                <li><strong>範例資料（排名）</strong>: [cite: 31]
+                    <ul>
+                        <li>品質 (Quality): 6, 1, 5, 2, 9, 7, 8, 3, 10, 4 [cite: 31]</li>
+                        <li>可接受性 (Acceptability): 9, 1, 2, 3, 10, 7, 5, 8, 6, 4 [cite: 31]</li>
+                    </ul>
+                </li>
+                <li>這是<strong>兩個維度上的排名資料</strong>示例。 [cite: 30]</li>
+                <li><strong>斯皮爾曼相關係數 (Spearman's correlation coefficient, $r_s$)</strong>: [cite: 30]
+                    <ul>
+                        <li>$r_s$ 實際上是一個普通的<strong>皮爾森積差相關係數</strong>。 [cite: 30]</li>
+                        <li>它的計算是基於<strong>排名</strong>而不是實際測量的變項值。 [cite: 30]</li>
+                        <li>如果存在<strong>並列排名 (tied ranks)</strong>，我們需要調整斯皮爾曼係數，但這只是為了使其與皮爾森 $r$ 保持一致。 [cite: 30]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 18</p>
+            <ul>
+                <li><strong>R 語言處理排序資料</strong>: [cite: 32]
+                    <ul>
+                        <li><code>quality <- c(6, 1, 5, 2, 9, 7, 8, 3, 10, 4)</code> [cite: 32]</li>
+                        <li><code>acceptability <- c(9, 1, 2, 3, 10, 7, 5, 8, 6, 4)</code> [cite: 32]</li>
+                        <li><code>d <- data.frame(quality, acceptability)</code> 建立資料框。 [cite: 32]</li>
+                    </ul>
+                </li>
+                <li><strong>R 語言計算斯皮爾曼相關係數</strong>: [cite: 32]
+                    <ul>
+                        <li><code>cor.test(d$quality, d$acceptability, method = "spearman", alternative = "two.sided")</code>。 [cite: 32]</li>
+                        <li>結果顯示 Spearman's rho (rho 為斯皮爾曼相關係數的符號) 為 0.5757576，S 值為 70，p 值為 0.08777。 [cite: 32]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 19</p>
+            <ul>
+                <li><strong>R 語言使用皮爾森方法計算排序資料的相關係數</strong>: [cite: 33]
+                    <ul>
+                        <li><code>cor.test(d$quality, d$acceptability, method = "pearson", alternative = "two.sided")</code>。 [cite: 33]</li>
+                        <li>結果顯示皮爾森積差相關係數為 0.5757576，t 值為 1.9917，df 為 8，p 值為 0.08155。 [cite: 33]</li>
+                    </ul>
+                </li>
+                <li><strong>為何使用排名？兩個原因</strong>: [cite: 34]
+                    <ul>
+                        <li><strong>不信任基礎尺度性質</strong>: 如果你對基礎測量尺度（例如：朋友數量、10 點量表評分）的性質不信任，那麼將原始資料轉換為排名會更合適。例如，報告朋友最少的人被分配到排名 1，依此類推，然後用這些排名進行相關性分析。 [cite: 34]</li>
+                        <li><strong>降低極端分數的權重</strong>: 排名會限制大的差異，並將它們保持在小的差異的相同一般水平。 [cite: 35]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 20</p>
+            <ul>
+                <li><strong>$r_s$ 的解釋</strong>: [cite: 36]
+                    <ul>
+                        <li>比皮爾森 $r$ 稍微難解釋。 [cite: 36]</li>
+                        <li>當資料是自然排名時（例如上述例子），$r_s$ 是<strong>一套排名與另一套排名之間線性關係</strong>的衡量。 [cite: 36]</li>
+                        <li>當我們將獲得的資料轉換為排名時，$r_s$ 衡量的是<strong>排名之間關係的線性程度</strong>。 [cite: 36]</li>
+                        <li>但它衡量的是原始變項之間<strong>單調關係 (monotonic relationship)</strong> 的程度。 [cite: 36]
+                            <ul>
+                                <li>單調關係是指持續上升或持續下降的關係。 [cite: 36]</li>
+                                <li>這條線不一定是直線，它可以先上升一段，然後持平，再上升。 [cite: 37]</li>
+                                <li>但它不能反轉方向（即不能先上升後下降，或先下降後後下降）。 [cite: 37]</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">6. 影響相關性的因素 (Factors that affect the correlation) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 21</p>
+            <ul>
+                <li>樣本的三個特徵會顯著影響相關係數： [cite: 38]
+                    <ul>
+                        <li>X 和/或 Y 的範圍限制 (Range restrictions of X and/or Y)。 [cite: 38]</li>
+                        <li>非線性關係 (Nonlinearity)。 [cite: 38]</li>
+                        <li>異質子樣本的影響 (The effect of heterogeneous subsamples)。 [cite: 38]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 22</p>
+            <ul>
+                <li><strong>X 和/或 Y 的範圍限制</strong>: [cite: 39]
+                    <ul>
+                        <li>這會改變 X 和 Y 之間的相關性，使其不同於如果範圍未受限制時的相關性。 [cite: 39]</li>
+                        <li>由於此類限制，相關性可能<strong>上升或下降</strong>。 [cite: 39]</li>
+                        <li>最常見的情況是 $r$ 值<strong>減小</strong>。 [cite: 39]</li>
+                        <li><strong>範例</strong>: 大學平均績點 (GPA) 與標準化成就測驗分數。在理想情況下，所有參加考試的人都會進入大學並獲得平均績點，這會產生較高的相關性 ($r=.65$)。 [cite: 39]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 23</p>
+            <ul>
+                <li><strong>X 和/或 Y 的範圍限制 (續)</strong>: [cite: 40]
+                    <ul>
+                        <li>在現實世界中，只有獲得相對較高分數的學生才能被錄取，因此，效標測量 (Y, GPA) 僅適用於 X 的較高值。這種限制會導致 $r$ 值<strong>降低</strong>（例如從 .65 降至 .43）。 [cite: 40]</li>
+                        <li>因此，當我們看到基於受限制樣本計算的相關係數時，該係數可能<strong>完全不適用於我們當前的問題</strong>。 [cite: 40]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 24</p>
+            <ul>
+                <li><strong>非線性關係 (Nonlinearity)</strong>: [cite: 41]
+                    <ul>
+                        <li>當範圍限制導致消除一些<strong>曲線關係</strong>時，限制 X 的範圍會<strong>增加 $r$ 值</strong>。 [cite: 41]</li>
+                        <li><strong>範例 1</strong>: 如果我們將閱讀能力與年齡進行相關性分析。資料將會是<strong>明顯的曲線關係</strong>。 [cite: 41]
+                            <ul>
+                                <li>閱讀能力會持平幾年。 [cite: 41]</li>
+                                <li>然後上升到大約 17 歲。 [cite: 41]</li>
+                                <li>接著持平甚至下降。 [cite: 41]</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 25</p>
+            <ul>
+                <li><strong>非線性關係 (續)</strong>: [cite: 42]
+                    <ul>
+                        <li>由於相關性衡量的是<strong>線性關係</strong>，因此這種曲線關係會導致相關性<strong>相當低</strong>。 [cite: 42]</li>
+                        <li>然而，如果我們將年齡範圍限制在 4 到 17 歲之間，則相關性將會<strong>相當高</strong>。 [cite: 42]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 26</p>
+            <ul>
+                <li><strong>非線性關係 (範例 2)</strong>: 參考左圖，該關係是<strong>明顯的曲線關係</strong>，隨著醫療支出的增加而上升。 [cite: 43]
+                    <ul>
+                        <li>對於資料點 > 2000 的部分，<strong>沒有明確的關係</strong>，最合適的擬合線將基本上是平坦的。 [cite: 43]</li>
+                        <li>對於資料點 < 2000 的部分，存在<strong>正向線性關係</strong>。 [cite: 43]</li>
+                    </ul>
+                </li>
+                <li>有時故意限制其中一個變項的範圍會很有用。 [cite: 43]</li>
+            </ul>
+
+            <p class="page-number">投影片 27</p>
+            <ul>
+                <li><strong>異質子樣本 (Heterogeneous subsamples)</strong>: [cite: 44]
+                    <ul>
+                        <li><strong>範例</strong>: 男性與女性身高和體重之間的關係。 [cite: 44]</li>
+                        <li><strong>整體相關性 ($r_{all}$)** 會大於單獨計算男性 ($r_M$) [cite: 45] 和女性 ($r_F$) [cite: 45] 的相關性。 [cite: 44]</li>
+                        <li><strong>原因</strong>: 男性平均而言比女性更高且更重。這使得在合併資料時，整體相關性更強。 [cite: 46]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 28</p>
+            <ul>
+                <li><strong>異質子樣本 (續)</strong>: [cite: 47]
+                    <ul>
+                        <li><strong>另一個範例</strong>: 男性與女性膽固醇水平和心血管疾病之間的關係。 [cite: 47]
+                            <ul>
+                                <li>如果將兩性資料<strong>合併</strong>，關係並不顯著。 [cite: 47]</li>
+                                <li>但當你將資料按男性和女性<strong>分開</strong>時，心血管疾病會隨著膽固醇水平的增加而增加，存在明顯的趨勢。 [cite: 47]</li>
+                            </ul>
+                        </li>
+                        <li>實驗者在合併來自不同來源的資料時必須小心。<strong>第三個變項的存在可能增強或掩蓋</strong>兩個變項之間的關係。 [cite: 47]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">7. 警惕極端觀察值 (Beware extreme observations) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 29</p>
+            <ul>
+                <li><strong>問題</strong>: 飲酒和吸煙之間是否存在相關性？ [cite: 48]
+                    <ul>
+                        <li>英國政府一項家庭調查研究了英國 11 個地區在煙草製品和酒精方面的家庭支出。 [cite: 48]</li>
+                        <li>根據常識，我們預期這兩個變項會相關。 [cite: 49]</li>
+                        <li>然而，計算出的相關性僅為 .224 ($p=.509$)。這是否意味著我們的直覺是錯的？或者還有其他解釋？ [cite: 49]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 30</p>
+            <ul>
+                <li><strong>處理極端觀察值的第一步</strong>: 查看資料的分布。 [cite: 50]</li>
+                <li><strong>移除極端值</strong>: 如果我們移除北愛爾蘭這個極端值。 [cite: 50]
+                    <ul>
+                        <li>其餘的點顯示出 .784 的相關性，以及相關的雙尾 $p$ 值為 .007。 [cite: 50]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 31</p>
+            <ul>
+                <li><strong>我們可以直接丟棄不喜歡的觀察值嗎？</strong>: [cite: 52]
+                    <ul>
+                        <li><strong>不能！</strong> 你必須提供一個合理的理由，或者說明它因為未知原因而異常。 [cite: 52]</li>
+                        <li><strong>報告結果</strong>: 你應該同時報告<strong>包含</strong>和<strong>排除</strong>該點的結果。 [cite: 52]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">8. 相關性與因果關係 (Correlation and Causation) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 32</p>
+            <ul>
+                <li><strong>相關性不意味著因果關係 (Correlation does not imply causation)</strong>。 [cite: 53]
+                    <ul>
+                        <li><strong>範例</strong>: 醫師人數與嬰兒死亡率。更多的醫師絕不可能導致死亡率增加。 [cite: 53]</li>
+                        <li><strong>範例</strong>: 醫療支出與預期壽命。這兩者之間顯然沒有關係。 [cite: 53]</li>
+                    </ul>
+                </li>
+                <li><strong>誘人推斷因果關係的情況 (因為因果關係可能是邏輯上的解釋)</strong>: [cite: 53]
+                    <ul>
+                        <li><strong>太陽輻射與乳癌</strong>: 太陽輻射確實會增加維生素 D 的產生，而這可能對乳癌具有保護作用。 [cite: 53]</li>
+                        <li><strong>葡萄酒消費與心臟病</strong>: 葡萄酒中的化合物可能確實能減少導致心臟病的身體過程。 [cite: 53]</li>
+                    </ul>
+                </li>
+                <li><strong>我們如何知道我們談論的是因果關係還是其他關係？</strong> [cite: 53]</li>
+                <li><strong>Utts (2005): 兩個變項相關的 7 個可能原因</strong>: [cite: 54]
+                    <ol>
+                        <li><strong>關係實際上可能是因果關係</strong> (The relationship actually could be causal)。例如：陽光 $\rightarrow$ 乳癌。 [cite: 54]</li>
+                        <li><strong>反向因果關係</strong> (The reverse is true)。響應變數實際上可能導致解釋變數。例如：幸福 $\rightarrow$ 更好的人際關係，或 良好的人際關係 $\rightarrow$ 感覺更幸福。 [cite: 54]</li>
+                    </ol>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 33</p>
+            <ul>
+                <li><strong>Utts (2005) 原因 (續)</strong>: [cite: 55]
+                    <ol start="3">
+                        <li><strong>關係可能只有部分因果關係</strong> (The relationship may be only partially causal)。例如：多重原因之一或必要原因，像是手機 $\rightarrow$ 成癮。 [cite: 55]</li>
+                        <li><strong>只有在其他變項存在的情況下才會發生或加劇</strong> (Only occur, or are accentuated in the presence of some other variable, moderation)。例如：財富增加與幸福感增加，可能受到「好朋友」這個變項的調節。 [cite: 55]</li>
+                        <li><strong>可能存在第三個混淆變項</strong> (There may be a third, confounding, variable present)。例如：醫師人數與嬰兒死亡率，可能被<strong>人口</strong>混淆 [cite: 56]；葡萄酒消費與心臟病，可能被<strong>陽光</strong>混淆。 [cite: 56]</li>
+                        <li><strong>兩個變項都可能與第三個因果變項相關</strong> (Both variables may be related to a third, causal, variable)。例如：家庭穩定和身體疾病都可能受到「外部壓力」的影響。 [cite: 56]</li>
+                    </ol>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 34</p>
+            <ul>
+                <li><strong>Utts (2005) 原因 (續)</strong>: [cite: 57]
+                    <ol start="7">
+                        <li><strong>變項可能正在隨時間變化</strong> (Variables may be changing over time)。例如：離婚率和毒品犯罪隨時間的變化。 [cite: 57]</li>
+                        <li><strong>相關性可能只是巧合</strong> (The correlation may be due to coincidence)。兩件事只是碰巧同時發生。人們可能會在沒有實際原因的情況下，看到因果關係。 [cite: 57]</li>
+                    </ol>
+                </li>
+                <li><strong>如何建立因果關係</strong>: [cite: 58]
+                    <ul>
+                        <li>要讓 A 導致 B： [cite: 58]
+                            <ul>
+                                <li>A 必須在 B 之前發生。 [cite: 58]</li>
+                                <li>A 必須與 B 同時發生。 [cite: 58]</li>
+                            </ul>
+                        </li>
+                        <li><strong>排除其他變項</strong>: 如果我們能證明 A 在其他可能因果因素存在或不存在的情況下都能導致 B，那麼我們就強化了我們的論點。這就是為什麼科學非常關注<strong>隨機化 (randomization)</strong> 的原因。隨機分配使得組間出現系統性差異的可能性極低，而這些差異本來可能會導致任何觀察到的差異。 [cite: 58]</li>
+                        <li>我們需要提出一些<strong>合理</strong>的解釋，說明這種情況是如何發生的。 [cite: 58]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">9. 如果某事看起來好得不像真的，那它可能就不是真的 (If something looks too good to be true, perhaps it is) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 35</p>
+            <ul>
+                <li><strong>圖 9.1</strong>: 醫師人數增加，嬰兒死亡率也隨之增加？ [cite: 60]</li>
+            </ul>
+
+            <p class="page-number">投影片 36</p>
+            <ul>
+                <li><strong>圖 9.1 的解釋</strong>: [cite: 61]
+                    <ul>
+                        <li>這些資料都來自<strong>已開發國家</strong>。如果我們從所有國家中隨機抽樣，這些差異遠不如我們預期的那麼大。至少嬰兒死亡率的一些變異可能更多是系統中無意義的隨機波動，而非有意義的變異。 [cite: 62]</li>
+                        <li>這些資料是<strong>有選擇性</strong>的。因為這是一個令人驚訝的發現。作者當時正在尋找死亡率的預測因子，而這種關係在其他更符合預期的關係中脫穎而出。 [cite: 62]</li>
+                    </ul>
+                </li>
+                <li><strong>一些可能的解釋</strong>: [cite: 61]
+                    <ul>
+                        <li><strong>報告問題</strong>: 醫師越多，我們報告嬰兒死亡的機會就越大。 [cite: 63]
+                            <ul>
+                                <li>這將是一個合理的解釋，如果我們談論的是<strong>發展中國家</strong>（許多死亡可能未被報告），但我們並不是。 [cite: 63]</li>
+                            </ul>
+                        </li>
+                        <li><strong>反向方向</strong>: 高嬰兒死亡率導致高醫師人數。 [cite: 63]</li>
+                        <li><strong>高人口密度</strong>: 高人口密度 $\rightarrow$ 高嬰兒死亡率 $\rightarrow$ 吸引醫師。 [cite: 63]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">10. 相關係數的顯著性檢定 (Testing the Significance of a Correlation Coefficient) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 37</p>
+            <ul>
+                <li><strong>相關係數的抽樣分布 (Sampling distribution of correlation coefficients)</strong>: [cite: 64]
+                    <ul>
+                        <li><strong>模擬</strong>: 隨機抽取 50 個數字作為「收入」變項，再抽取另外 50 個數字作為「音樂性」變項。將第一個集合中的第一個數字與第二個集合中的第一個數字配對，第二個與第二個，依此類推。然後計算這兩個變項之間的相關性。 [cite: 64]</li>
+                        <li><strong>情境</strong>: 如果你獲得了 .278 的相關性。我們能否得出結論，一個人的音樂性越高，其收入也越高（反之亦然）？ [cite: 65]</li>
+                        <li>這是一個<strong>機會差異</strong>還是<strong>真實差異</strong>？ [cite: 65]</li>
+                        <li><strong>真實相關值是多少？</strong>: 這些資料只是<strong>隨機數</strong>，兩組隨機數之間實際上沒有任何真實相關性，所以真實值是 0。 [cite: 66]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 38</p>
+            <ul>
+                <li><strong>統計學會說謊嗎？</strong>: 相關係數和所有其他統計量一樣，都受到<strong>抽樣誤差</strong>的影響。它們會偏離總體中的真實相關性（在這種情況下為零）一定的量。 [cite: 67]
+                    <ul>
+                        <li>預期會出現與真實值 0 的<strong>小偏差</strong>。 [cite: 68]</li>
+                        <li><strong>大偏差</strong>則不應預期。 [cite: 68]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 39</p>
+            <ul>
+                <li><strong>多大才算太大？</strong>: 我們何時決定我們的相關係數與零的距離足夠遠，以至於我們不再相信總體中的真實相關性可能是零？ $\rightarrow$ <strong>假設檢定</strong>（在第八章中介紹）。 [cite: 69, 70]</li>
+                <li><strong>回顧生活步調與心臟病範例</strong>:
+                    <ul>
+                        <li><strong>虛無假設 ($H_0$)</strong>: $\rho=0$ (總體相關係數為 0)。 [cite: 70]</li>
+                        <li><strong>對立假設 ($H_1$)</strong>: $\rho \neq 0$ (總體相關係數不為 0)。 [cite: 70]</li>
+                        <li>如果我能夠拒絕 $H_0$。 [cite: 70]
+                            <ul>
+                                <li>結論是特定城市的生活步調確實會影響該城市的心臟病發生率。 [cite: 70]</li>
+                            </ul>
+                        </li>
+                        <li>如果我不能拒絕 $H_0$。 [cite: 70]
+                            <ul>
+                                <li>結論是我沒有足夠的證據表明這些變項是否相關以及關係的方向。 [cite: 70]</li>
+                                <li>我會將它們視為線性獨立。 [cite: 70]</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 40</p>
+            <ul>
+                <li><strong>檢定統計量及其抽樣分布</strong>: [cite: 71]
+                    <ul>
+                        <li><strong>樣本統計量</strong>: 相關係數 $r=\frac{cov_{XY}}{s_X s_Y}$。其抽樣分布為偏斜（當 $r=0$ 時對稱）。 [cite: 71]</li>
+                        <li><strong>檢定統計量</strong>: 學生 t 值 $t=\frac{r\sqrt{N-2}}{\sqrt{1-r^2}}$。其抽樣分布為 t 分布。 [cite: 71]</li>
+                        <li><strong>自由度 (Degrees of freedom)</strong>: $N-2$。其中 N 是樣本大小（配對數，而不是單獨資料點的數量，因為那將是 2N）。 [cite: 71]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 41</p>
+            <ul>
+                <li><strong>比較 Z 分布與 t 分布</strong>: 當自由度 $df=1$ 時，t 分布比標準常態 (z) 分布更為扁平，尾部更厚。 [cite: 72]</li>
+            </ul>
+
+            <p class="page-number">投影片 42</p>
+            <ul>
+                <li><strong>比較 Z 分布與 t 分布 (續)</strong>: [cite: 74]
+                    <ul>
+                        <li>當自由度增加時會發生什麼？ 隨著 $df$ 接近 30，t 分布會收斂到 z 分布。 [cite: 74]</li>
+                    </ul>
+                </li>
+                <li><strong>多大才算太大？ (續)</strong>: [cite: 75]
+                    <ul>
+                        <li>我們何時決定我們的相關係數與零的距離足夠遠，以至於我們不再相信總體中的真實相關性可能是零？ $\rightarrow$ <strong>假設檢定</strong>（在第八章中介紹）。 [cite: 76]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 43</p>
+            <ul>
+                <li><strong>回顧生活步調與心臟病範例的檢定計算</strong>: [cite: 77]
+                    <ul>
+                        <li><strong>樣本統計量</strong>: 相關係數 $r=0.365$。 [cite: 77]</li>
+                        <li><strong>檢定統計量 (t 值)</strong>: $t=\frac{.365\sqrt{36-2}}{\sqrt{1-.365^2}} = \frac{.365\sqrt{34}}{\sqrt{.8667}} \approx 2.286$。 [cite: 77]</li>
+                        <li><strong>自由度</strong>: $N-2 = 36-2 = 34$。 [cite: 77]</li>
+                        <li><strong>p 值 (單尾檢定)</strong>: 我們獲得至少與觀測值一樣大的樣本相關性的概率是多少？ $1-pt(2.2869, df=34) = 0.01427511 \approx 0.014$。 [cite: 78]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 44</p>
+            <ul>
+                <li><strong>回顧生活步調與心臟病範例 (續)</strong>:
+                    <ul>
+                        <li><strong>虛無假設 ($H_0$)</strong>: $\rho=0$ (總體相關係數為 0)。 [cite: 79]</li>
+                        <li><strong>對立假設 ($H_1$)</strong>: $\rho \neq 0$ (總體相關係數不為 0)。 [cite: 79]</li>
+                        <li><strong>p 值 (雙尾檢定)</strong>: 我們獲得至少與觀測值一樣大（正向或負向）的樣本相關性的概率是多少？ $2 \times (1-pt(2.286, df=34)) = 0.02855021 \approx 0.029$。 [cite: 80]</li>
+                        <li><strong>虛無假設 ($H_0$)</strong>: $\rho \ge 0$ (大於或等於 0)。 [cite: 81]</li>
+                        <li><strong>對立假設 ($H_1$)</strong>: $\rho < 0$ (小於 0，負相關)。 [cite: 81]</li>
+                        <li><strong>p 值 (單尾檢定，負向)</strong>: 我們獲得至少與觀測值一樣大（負向）的樣本相關性的概率是多少？ $pt(2.2869, df=34) = 0.9857249 \approx 0.986$。 [cite: 81]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 45</p>
+            <ul>
+                <li><strong>回顧生活步調與心臟病範例 (續)</strong>: [cite: 82]
+                    <ul>
+                        <li><strong>虛無假設 ($H_0$)</strong>: $\rho \le 0$ (小於或等於 0)。 [cite: 82]</li>
+                        <li><strong>對立假設 ($H_1$)</strong>: $\rho > 0$ (大於 0，正相關)。 [cite: 82]</li>
+                        <li><strong>p 值 (單尾檢定，正向)</strong>: 我們獲得至少與觀測值一樣大（正向）的樣本相關性的概率是多少？ $1-pt(2.2869, df=34) = 0.01427511 \approx 0.014$。 [cite: 83]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 46</p>
+            <ul>
+                <li><strong>R 語言皮爾森積差相關係數檢定 (不同對立假設)</strong>: [cite: 84]
+                    <ul>
+                        <li><code>alternative = "two.sided"</code> (雙尾檢定): p 值為 0.02855。 [cite: 84]</li>
+                        <li><code>alternative = "less"</code> (單尾檢定，小於 0): p 值為 0.9857。 [cite: 84]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 47</p>
+            <ul>
+                <li><strong>R 語言皮爾森積差相關係數檢定 (單尾檢定，大於 0)</strong>: [cite: 85]
+                    <ul>
+                        <li><code>alternative = "greater"</code> (單尾檢定，大於 0): p 值為 0.01427。 [cite: 85]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">11. 相關係數的信賴區間 (Confidence Intervals on Correlation Coefficients) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 48</p>
+            <ul>
+                <li><strong>為什麼我們需要信賴區間？</strong>: 顯著性檢定並不能告訴我們太多關於總體中真實相關性的實際情況。為此，我們需要一個<strong>信賴區間</strong>。 [cite: 86, 87]</li>
+                <li>從<strong>點估計</strong>（一個單一值）到<strong>區間估計</strong>（一個範圍值）。 [cite: 87]</li>
+                <li><strong>如何解釋信賴區間？ (模擬)</strong>: 如果你計算 100 個 95% 信賴區間，這些區間涵蓋了生活步調與心臟病發病率之間的相關係數。 [cite: 88]
+                    <ul>
+                        <li>約 95 個區間將包含（括住）真實的總體相關性（模擬結果為 94 個）。 [cite: 89, 90]</li>
+                        <li>約 5 個區間將不包含（模擬結果為 6 個）。 [cite: 89, 90]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 49</p>
+            <ul>
+                <li><strong>如何解釋信賴區間？ (續)</strong>: [cite: 90]
+                    <ul>
+                        <li><strong>機率指的是程序，而不是數字本身</strong>。如果你對某個統計量計算 100 個 95% 信賴區間，大約 95 個區間會包含（括住）真實的總體相關性。 [cite: 90]</li>
+                        <li>因此，假設你即將進行一個實驗，並將計算某些資料的相關係數。當你實際進行實驗時，你的區間有 .95 的概率能夠括住真實的相關性。 [cite: 90]</li>
+                        <li>對於生活步調與心臟病發病率的範例：我能說「我有 95% 的把握這個區間 .04 - .62 包含 $\rho$」嗎？ [cite: 91]
+                            <ul>
+                                <li>嚴格的機率理論家會爭辯說，一旦你運行了實驗並計算了你的統計量，信賴區間要麼包含 $\rho$，要麼不包含。因此，將 .95 的概率賦予它是不恰當的。 [cite: 92]</li>
+                                <li>然而，堅持認為機率指的是程序而非數字，雖然這是正確的，但對學生來說可能會更混淆。 [cite: 92]</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">12. 互相關矩陣與散布圖矩陣 (Intercorrelation and Scatterplot Matrix) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 50</p>
+            <ul>
+                <li><strong>互相關矩陣 (Intercorrelation matrix)</strong>: 一個矩陣，其中每個單元格包含行和列變項之間的相關性及相關資訊。當我們擁有一整套變項，並想了解它們如何以成對方式相互關聯時非常有用。 [cite: 93]</li>
+                <li><strong>散布圖矩陣 (Scatterplot matrix)</strong>: 一個矩陣，其單元格中是行和列變項的散布圖。 [cite: 93]
+                    <ul>
+                        <li>$p < .05$ 用一個星號表示 (*)。 [cite: 93]</li>
+                        <li>$p < .01$ 用兩個星號表示 (**)。 [cite: 93]</li>
+                        <li>$p < .001$ 用三個星號表示 (***)。 [cite: 93]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 51</p>
+            <ul>
+                <li><strong>Guber (1999) 研究</strong>: 探討學業成績是否與州教育預算呈正相關。 [cite: 94]</li>
+            </ul>
+
+            <p class="page-number">投影片 52</p>
+            <ul>
+                <li><strong>互相關矩陣：方法 1 (R 語言)</strong>: [cite: 95]
+                    <ul>
+                        <li>讀取資料檔案並選擇相關變項（Expend, PTratio, Salary, SAT, ACTcomp, PctACT, PctSAT）。 [cite: 95]</li>
+                        <li>使用 <code>cor()</code> 函數計算相關矩陣。 [cite: 95]</li>
+                        <li>使用 <code>round()</code> 函數將結果四捨五入到指定位數。 [cite: 95]</li>
+                    </ul>
+                </li>
+                <li><strong>互相關矩陣：方法 2 (R 語言)</strong>: [cite: 96]
+                    <ul>
+                        <li>安裝並載入 <code>Hmisc</code> 套件。 [cite: 96]</li>
+                        <li>使用 <code>rcorr()</code> 函數計算相關矩陣。此函數除了相關係數外，還會提供 p 值和樣本數。 [cite: 96]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 53</p>
+            <ul>
+                <li><strong>散布圖矩陣 (R 語言)</strong>: [cite: 97]
+                    <ul>
+                        <li>使用 <code>pairs()</code> 函數創建散布圖矩陣。 [cite: 97]</li>
+                        <li>語法為 <code>pairs(~變項1+變項2+...+變項n, data = 資料框, main = "標題")</code>。 [cite: 97]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">13. 其他相關係數 (Other Correlation Coefficients) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 53</p>
+            <ul>
+                <li><strong>皮爾森 $r$</strong>: 標準相關係數，主要適用於服從區間或比率測量尺度（連續變數）的變項。 [cite: 97]</li>
+            </ul>
+
+            <p class="page-number">投影片 54</p>
+            <ul>
+                <li><strong>斯皮爾曼 $r_s$</strong>: 當變項為<strong>排名形式</strong>時，使用與皮爾森公式相同的計算方法會產生一個稱為斯皮爾曼 $r_s$ 的統計量。適用於<strong>序數測量尺度</strong>。 [cite: 98]</li>
+                <li><strong>點雙列相關係數 (Point biserial correlation, $r_{pb}$)</strong>: 當我們有一個連續變項和一個二分變項（即該變項只有兩個水平）時，我們生成的相關係數稱為點雙列相關。皮爾森公式也用於計算 $r_{pb}$。我們將結果稱為 $r_{pb}$ 而不是 $r$，是為了指出它是一個從其中一個變項是二分變項的資料中計算出的點雙列相關。 [cite: 99]</li>
+            </ul>
+
+            <p class="page-number">投影片 55</p>
+            <ul>
+                <li><strong>Phi 係數 ($\phi$)</strong>: 當兩個變項都測量為<strong>二分變項</strong>時，會產生一個略微不同的相關係數 $\phi$ (phi)。同樣，使用皮爾森公式並將結果標記為 $\phi$ 既容易又正確。 [cite: 100]</li>
+                <li><strong>表格中的空白處</strong>: 反映了當我們有一個排名變項和一個連續或二分變項時，我們<strong>沒有一個好的相關係數</strong>可以使用。 [cite: 101]</li>
+                <li><strong>重要提示</strong>: 此表格中顯示的所有相關性都可以通過使用<strong>標準皮爾森公式</strong>獲得。 [cite: 101]</li>
+            </ul>
+        </div>
+
+        <h2 onclick="toggleContent(this)">14. $r^2$ 與效應量的大小 ($r^2$ and the Magnitude of an Effect) <span class="toggle-icon">▼</span></h2>
+        <div class="content">
+            <p class="page-number">投影片 56</p>
+            <ul>
+                <li><strong>效應量 (Effect size)</strong>: 獨立變項（預測因子）有多重要或有影響力。 [cite: 102]</li>
+                <li><strong>對於相關性</strong>: 簡單來說就是<strong>相關係數的平方，$r^2$</strong>。 [cite: 102]</li>
+                <li><strong>以生活步調為例</strong>: 我們觀察了 36 個城市的心臟病發生率。如果我們計算該變項的變異性。我們將有一個衡量各城市心臟病發生率差異程度的指標。 [cite: 102]</li>
+                <li><strong>效應量 $r^2$ 的意義</strong>: 是<strong>心臟病變異中由「生活步調」變項解釋的比例</strong>。 [cite: 103]
+                    <ul>
+                        <li><strong>低 $r^2$</strong>: 表示生活步調解釋的心臟病變異比例較少。 [cite: 103]</li>
+                        <li><strong>高 $r^2$</strong>: 表示生活步調解釋的心臟病變異比例較多。 [cite: 103]</li>
+                        <li><strong>誤差變異 (Error variation)</strong>: 指無法由城市生活步調分數解釋的變異。 [cite: 103]</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="page-number">投影片 57</p>
+            <ul>
+                <li><strong>以生活步調為例 (續)</strong>: [cite: 104]
+                    <ul>
+                        <li>$r^2$ 是<strong>解釋變異的百分比</strong>。 [cite: 104]</li>
+                        <li>$r^2 = .365^2 = .133$。 [cite: 104]</li>
+                        <li>這表示城市間心臟病發生率大約 13% 的差異，可以通過它們在生活步調上的差異來解釋。 [cite: 104]</li>
+                        <li><strong>13% 是一個可觀的量</strong>。 [cite: 104]</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function toggleContent(header) {
+            const content = header.nextElementSibling; // 獲取 H2 後緊跟的 content div
+            const icon = header.querySelector('.toggle-icon'); // 獲取箭頭圖標
+
+            if (content.style.display === 'block' || content.style.display === '') {
+                // 如果是展開狀態，則收合
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(-90deg)'; // 箭頭向下
+                header.classList.add('collapsed'); // 添加 collapsed class
+            } else {
+                // 如果是收合狀態，則展開
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)'; // 箭頭向上
+                header.classList.remove('collapsed'); // 移除 collapsed class
+            }
+        }
+
+        // 頁面加載時，預設收合所有內容
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.content').forEach(contentDiv => {
+                contentDiv.style.display = 'none'; // 預設隱藏
+                const header = contentDiv.previousElementSibling; // 獲取對應的 H2 標籤
+                if (header && header.tagName === 'H2') {
+                    const icon = header.querySelector('.toggle-icon');
+                    if (icon) {
+                        icon.style.transform = 'rotate(-90deg)'; // 預設箭頭向下
+                    }
+                    header.classList.add('collapsed'); // 添加 collapsed class
+                }
+            });
+        });
+    </script>
+</body>
+</html>
